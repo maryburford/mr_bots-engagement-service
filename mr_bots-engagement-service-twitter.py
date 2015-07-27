@@ -42,7 +42,7 @@ for c in campaigns:
 not_done = True
 while not_done:
 	not_done = False
-	for engagement_queue in campaigns:
+	for engagement_queue in engagements:
 		if len(engagement_queue) == 0:
 			break
 		engagement = engagement_queue.shift()
