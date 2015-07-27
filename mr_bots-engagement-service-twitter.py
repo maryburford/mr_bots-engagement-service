@@ -2,6 +2,7 @@ import tweepy
 import sqlite3
 import collections
 import random
+from time import sleep
 
 # from the campaign target's results, pick random prey
 def random_prey(prey, max_favs):
@@ -40,20 +41,42 @@ for c in campaigns:
 
 # iterate through the the actions queued for each campaign, 
 # until all actions for all campaigns have been completed
-print engagements
+engaged_tweets = []
 not_done = True
 while not_done:
 	not_done = False
 	for engagement_queue in engagements.values():
 		if len(engagement_queue) == 0:
 			break
-		engagement = engagement_queue.pop()
+		# perform this engagement and remove from queue
+		engage = engagement_queue[-1]
+		engagement_queue.popleft()
+		for gag in engage:
+			prey_id = gag
+			campaign_id = engage[gag][0]
+			token = engage[gag][1]
+			secret = engage[gag][2]
+			# construct api connection
+			auth = tweepy.OAuthHandler('tdGB5bGdjqlM3hRVIA3VYY0n9', 'vaAejiob0uko8YPu81tTxB585cvA4G1WmKmwGLGESpMOw5MXxr')
+			auth.set_access_token(token, secret)
+			api = tweepy.API(auth)
+			# get tweets
+			tweets = api.user_timeline(prey_id)
+			# iterate through tweets
+			for t in tweets:
+				print t.id
+				json_object = t._json
+				user_name = json_object['user']['screen_name']
+				tweet_id = t.id
+				tweet_lookup = str(campaign_id) + ' ' + str(tweet_id)
+				# check to see if prey has already been engaged
+				if tweet_lookup in engaged_tweets:
+					pass
+				# engage if prey needs engagement	
+				else:
+					api.create_favorite(tweet_id)
+					faved_tweets.append(tweet_lookup)
+			sleep(90)
 		if len(engagement_queue) > 0:
 			not_done = True
-#	time.sleep(90)
 
-#	auth = tweepy.OAuthHandler('tdGB5bGdjqlM3hRVIA3VYY0n9', 'vaAejiob0uko8YPu81tTxB585cvA4G1WmKmwGLGESpMOw5MXxr')
-#	auth.set_access_token(token, secret)
-#	tweets = get_tweets(to_engage['account_to_fav'])
-#	fav_tweet(to_fav['account_id'], tweets[0])
-#	sleep(90 secs)
