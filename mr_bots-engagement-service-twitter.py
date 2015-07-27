@@ -34,23 +34,23 @@ for c in campaigns:
 	r_prey = random_prey(prey, max_favs)
 	for p in r_prey:
 		new_engagement = dict()
-		new_engagement[p] = [token, secret, account_id]
+		new_engagement[p] = [campaign_id, token, secret, account_id]
 		engagements_for_campaign.append(new_engagement)
-	engagements[c] = engagements_for_campaign
+	engagements[campaign_id] = engagements_for_campaign
 
 # iterate through the the actions queued for each campaign, 
 # until all actions for all campaigns have been completed
+print engagements
 not_done = True
 while not_done:
 	not_done = False
-	for engagement_queue in engagements:
+	for engagement_queue in engagements.values():
 		if len(engagement_queue) == 0:
 			break
-		engagement = engagement_queue.shift()
-		# do the engagement
+		engagement = engagement_queue.pop()
 		if len(engagement_queue) > 0:
 			not_done = True
-	time.sleep(90)
+#	time.sleep(90)
 
 #	auth = tweepy.OAuthHandler('tdGB5bGdjqlM3hRVIA3VYY0n9', 'vaAejiob0uko8YPu81tTxB585cvA4G1WmKmwGLGESpMOw5MXxr')
 #	auth.set_access_token(token, secret)
