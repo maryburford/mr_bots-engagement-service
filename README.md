@@ -35,4 +35,4 @@
                                  '-.__/
 </pre>
 
-This service executes the engagement logic and writes engagement log back into the application db. Written with mr_love. Enjoy! 
+This service executes the engagement logic and writes the engagement log back into the application db. Written with mr_love. Enjoy! 
