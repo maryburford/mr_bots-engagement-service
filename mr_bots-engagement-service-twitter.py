@@ -23,9 +23,9 @@ c.execute('select c.id, c.target, c.max_favs, a.token, a.secret, a.id from campa
 campaigns = c.fetchall()
 
 # iterate through mr_campaigns and create the mr_engagement_queue
-campaign_batch = collections.deque()
-engagement_queue = collections.deque()
+engagements = dict()
 for c in campaigns:
+	engagements_for_campaign = collections.deque()
 	campaign_id, campaign_target, max_favs, token, secret, account_id = c
 	auth = tweepy.OAuthHandler('tdGB5bGdjqlM3hRVIA3VYY0n9', 'vaAejiob0uko8YPu81tTxB585cvA4G1WmKmwGLGESpMOw5MXxr')
 	auth.set_access_token(token, secret)
@@ -35,12 +35,12 @@ for c in campaigns:
 	for p in r_prey:
 		new_engagement = dict()
 		new_engagement[p] = [token, secret, account_id]
-		engagement_queue.append(new_engagement)
+		engagements_for_campaign.append(new_engagement)
+	engagements[c] = engagements_for_campaign
 
 # shuffle engagement queue so it is randomized
-engagement_queue.shuffle()
-while len(fav_queue) != 0:
-	to_engage = engagement_queue.shift()
+for engagme in engagements:
+	engagements_for_campaign = en
 	print to_engage
 	print
 #	auth = tweepy.OAuthHandler('tdGB5bGdjqlM3hRVIA3VYY0n9', 'vaAejiob0uko8YPu81tTxB585cvA4G1WmKmwGLGESpMOw5MXxr')
