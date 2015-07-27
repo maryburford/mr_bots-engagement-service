@@ -49,6 +49,7 @@ while not_done:
 		# do the engagement
 		if len(engagement_queue) > 0:
 			not_done = True
+	time.sleep(90)
 
 #	auth = tweepy.OAuthHandler('tdGB5bGdjqlM3hRVIA3VYY0n9', 'vaAejiob0uko8YPu81tTxB585cvA4G1WmKmwGLGESpMOw5MXxr')
 #	auth.set_access_token(token, secret)
