@@ -38,7 +38,8 @@ for c in campaigns:
 		engagements_for_campaign.append(new_engagement)
 	engagements[c] = engagements_for_campaign
 
-# shuffle engagement queue so it is randomized
+# iterate through the the actions queued for each campaign, 
+# until all actions for all campaigns have been completed
 not_done = True
 while not_done:
 	not_done = False
