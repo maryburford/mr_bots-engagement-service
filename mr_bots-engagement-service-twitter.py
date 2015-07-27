@@ -39,10 +39,17 @@ for c in campaigns:
 	engagements[c] = engagements_for_campaign
 
 # shuffle engagement queue so it is randomized
-for engagme in engagements:
-	engagements_for_campaign = en
-	print to_engage
-	print
+not_done = True
+while not_done:
+	not_done = False
+	for engagement_queue in campaigns:
+		if len(engagement_queue) == 0:
+			break
+		engagement = engagement_queue.shift()
+		# do the engagement
+		if len(engagement_queue) > 0:
+			not_done = True
+
 #	auth = tweepy.OAuthHandler('tdGB5bGdjqlM3hRVIA3VYY0n9', 'vaAejiob0uko8YPu81tTxB585cvA4G1WmKmwGLGESpMOw5MXxr')
 #	auth.set_access_token(token, secret)
 #	tweets = get_tweets(to_engage['account_to_fav'])
