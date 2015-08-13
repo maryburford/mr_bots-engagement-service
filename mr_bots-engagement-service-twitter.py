@@ -100,14 +100,14 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 				else:
 					try:
 						api.create_favorite(tweet_id)
+						engaged_tweets.append(tweet_lookup)
+						c.execute("INSERT INTO engagements (campaign_id, prey_id, created_at, updated_at) VALUES ('{campaign_id}', '{prey_id}', '{created_at}', '{updated_at}')".format(campaign_id=engagement["campaign_id"], prey_id=engagement["prey_id"], created_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S')))
+						conn.commit()
+						# found suitable tweet, stop checking tweets
+						print 'Engagement: Campaign ' + str(engagement['campaign_id']) + ' > Fav Prey > ' + str(engagement['prey_id'])
+						break
 					except Exception as e:
-						print "Error faving: " + e
-					print 'Engagement: Campaign ' + str(engagement['campaign_id']) + ' > Fav Prey > ' + str(engagement['prey_id'])
-					engaged_tweets.append(tweet_lookup)
-					c.execute("INSERT INTO engagements (campaign_id, prey_id, created_at, updated_at) VALUES ('{campaign_id}', '{prey_id}', '{created_at}', '{updated_at}')".format(campaign_id=engagement["campaign_id"], prey_id=engagement["prey_id"], created_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S')))
-					conn.commit()
-					# found suitable tweet, stop checking tweets
-					break
+						print "Error faving: " + str(e)
 			if len(engagement_queue) > 0:
 				not_done = True
 		rnd = rnd + 1
