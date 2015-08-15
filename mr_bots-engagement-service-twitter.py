@@ -85,7 +85,13 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 			auth.set_access_token(engagement["token"], engagement["secret"])
 			api = tweepy.API(auth)
 			# get tweets
-			tweets = api.user_timeline(engagement["prey_id"])
+			try:
+				tweets = api.user_timeline(engagement["prey_id"])
+			except tweepy.error.TweepError as e:
+				print str(e)
+				# caused by user with protected acct
+				#TODO: this means the user gets one or more less engagements
+				continue
 			# print tweets
 			# iterate through tweets
 			for t in tweets:
