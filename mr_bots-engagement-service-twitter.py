@@ -10,23 +10,38 @@ import os
 import argparse
 import math
 
-
+def already_follow(pg_user, pg_password, pg_db, pg_host, account_id, p):
+	conn = psycopg2.connect("dbname='" + pg_db + "' user='" + pg_user + "' password='" + pg_password + "' host='" + pg_host + "'")
+	c = conn.cursor()
+	print ("select * from followers f where f.account_id = {account_id} and f.follower_id = {p}").format(account_id=account_id, p=p)
+	c.mogrify("select * from followers f where f.account_id = %s and f.follower_id = %s",(account_id, p))
+	try:
+		c.fetchall()
+	except Exception as e:
+		return 'Not Following'
+	return 'Following'
 # from the campaign target's results, pick random prey
-def random_prey(prey, n):
+def random_prey(prey, n, pg_user, pg_password, pg_db, pg_host, account_id):
 	prey = prey
 	if len(prey) <= n:
 		return prey
 	selected_prey = []
 	while len(selected_prey) < n:
 		p = random.choice(prey)
-		if p not in selected_prey:
-			selected_prey.append(p)
+		f = already_follow(pg_user, pg_password, pg_db, pg_host, account_id, p)
+		if f == 'Not Following':
+			if p not in selected_prey:
+				selected_prey.append(p)
 	return selected_prey
 
 
 
 # connect to mr_bots mr_database
-def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host): 
+def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
+	PG_USER = pg_user
+	PG_PASSWORD = pg_password
+	PG_DB = pg_db
+	PG_HOST = pg_host
 	conn = psycopg2.connect("dbname='" + pg_db + "' user='" + pg_user + "' password='" + pg_password + "' host='" + pg_host + "'")
 	c = conn.cursor()
 	# fetch all active mr_campaigns (will need to change to get all active campaigns)
@@ -43,11 +58,20 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 		print camp
 		engagements_for_campaign = collections.deque()
 		campaign_id, campaign_target, engagements_per_prey, engagements_per_day, token, secret, account_id = camp
-		auth = tweepy.OAuthHandler('tdGB5bGdjqlM3hRVIA3VYY0n9', 'vaAejiob0uko8YPu81tTxB585cvA4G1WmKmwGLGESpMOw5MXxr')
-		auth.set_access_token(token, secret)
-		api = tweepy.API(auth)
+		try:
+			auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+		except Exception as e:
+			print "\nError in authing MR_BOTS app\n"
+			break
+		# check user still auths MR_BOTS
+		try:
+			auth.set_access_token(token, secret)
+			api = tweepy.API(auth)
+		except Exception as e:
+			print "\Error in authing MR_BOTS user: "+str(account_id)+"\n"
+			continue
 		prey = api.followers_ids(campaign_target)
-		r_prey = random_prey(prey, math.floor(engagements_per_day/engagements_per_prey))
+		r_prey = random_prey(prey, math.floor(engagements_per_day/engagements_per_prey),pg_user, pg_password, pg_db, pg_host, account_id)
 		for p in r_prey:
 			for _ in xrange(engagements_per_prey):
 				new_engagement = dict()
@@ -80,15 +104,27 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 				break
 			# perform this engagement and remove from queue
 			engagement = engagement_queue.popleft()
-			# construct api connection
-			auth = tweepy.OAuthHandler('tdGB5bGdjqlM3hRVIA3VYY0n9', 'vaAejiob0uko8YPu81tTxB585cvA4G1WmKmwGLGESpMOw5MXxr')
-			auth.set_access_token(engagement["token"], engagement["secret"])
-			api = tweepy.API(auth)
+			# try to construct api connection
+			# check MR_BOTS app can still auth
+			try:
+				auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+			except Exception as e:
+				print "\nError in authing MR_BOTS app\n"
+				break
+			# check user still auths MR_BOTS
+			try:
+				auth.set_access_token(engagement["token"], engagement["secret"])
+				api = tweepy.API(auth)
+			except Exception as e:
+				print "\Error in authing MR_BOTS user: "+str(engagement["account_id"])+"\n"
+				continue
+
 			# get tweets
 			try:
 				tweets = api.user_timeline(engagement["prey_id"])
 			except tweepy.error.TweepError as e:
 				print str(e)
+				print "\Error cannot get prey tweets because prey is privot: "+str(engagement["prey_id"])+"\n"
 				# caused by user with protected acct
 				#TODO: this means the user gets one or more less engagements
 				continue
