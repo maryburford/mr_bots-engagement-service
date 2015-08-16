@@ -5,30 +5,58 @@ import random
 import time
 from time import sleep
 import datetime
+import argparse
+
 
 # connect to mr_bots mr_database
-conn = psycopg2.connect("dbname='development' user='mary' host='localhost'")
-c = conn.cursor()
-print c
-# fetch all active users with active mr_campaigns 
-c.execute("select a.token, a.secret, a.id, a.uid from campaigns c join accounts a on a.id = c.account_id where a.provider ilike 'twitter' and c.active is True")
-results = c.fetchall()
+def get_followers(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host): 
+	conn = psycopg2.connect("dbname='" + pg_db + "' user='" + pg_user + "' password='" + pg_password + "' host='" + pg_host + "'")
+	c = conn.cursor()
+	# fetch all active users with active mr_campaigns
+	c.execute("select a.token, a.secret, a.id, a.uid from campaigns c join accounts a on a.id = c.account_id where a.provider ilike 'twitter' and c.active is True")
+	results = c.fetchall()
+			
+	for r in results:
+		token, secret, account_id, user_id = r
+		# construct authed api agent AAA and see if user is still using MR_BOTS service and/or MR_BOTS app can still auth
+		try:
+			auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+		except Exception as e:
+			print "\nError in authing MR_BOTS app\n"
+			break
+		try:
+			auth.set_access_token(token, secret)
+			api = tweepy.API(auth)
+		except Exception as e:
+			print "\Error in Calling Followers for User: "+str(account_id)+"\n"
+			continue
+		# delete all followers in order to refresh
+		c.execute('DELETE FROM followers WHERE account_id = %s', [account_id])
+		# get followers, page thru and stuff into array
+		follower_ids = []
+		for page in tweepy.Cursor(api.followers_ids, user_id=user_id).pages():
+		    follower_ids.extend(page)
+		    time.sleep(3)
+		# iterate through followers and insert into database
+		for follower_id in follower_ids:
+			print follower_id
+			c.execute("INSERT INTO followers (follower_id, account_id, provider, updated_at, created_at) VALUES ('{follower_id}', '{account_id}','{provider}', '{created_at}', '{updated_at}')".format(follower_id=follower_id, account_id=account_id, provider='twitter', created_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S')))
+			conn.commit()
 
-for r in results:
-	token, secret, account_id, user_id = r
-	# delete all followers in order to refresh
-	c.execute('DELETE FROM followers WHERE account_id = %s', [account_id])
-	# construct authed api agent AAA
-	auth = tweepy.OAuthHandler('tdGB5bGdjqlM3hRVIA3VYY0n9', 'vaAejiob0uko8YPu81tTxB585cvA4G1WmKmwGLGESpMOw5MXxr')
-	auth.set_access_token(token, secret)
-	api = tweepy.API(auth)
-	follower_ids = []
-	for page in tweepy.Cursor(api.followers_ids, user_id=user_id).pages():
-	    follower_ids.extend(page)
-	    time.sleep(3)
-	for follower_id in follower_ids:
-		print follower_id
-		c.execute("INSERT INTO followers (follower_id, account_id, provider, updated_at, created_at) VALUES ('{follower_id}', '{account_id}','{provider}', '{created_at}', '{updated_at}')".format(follower_id=follower_id, account_id=account_id, provider='twitter', created_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S')))
-		conn.commit()
 
 
+if __name__  == "__main__":
+	parser = argparse.ArgumentParser(description="Twitter follower service.")
+	parser.add_argument("--consumer_key")
+	parser.add_argument("--consumer_secret")
+	parser.add_argument("--pg_user")
+	parser.add_argument("--pg_password")
+	parser.add_argument("--pg_db")
+	parser.add_argument("--pg_host")
+
+	args = parser.parse_args()
+	
+	if args.consumer_key and args.consumer_secret and args.pg_user and args.pg_password and args.pg_db:
+		get_followers(args.consumer_key, args.consumer_secret, args.pg_user, args.pg_password, args.pg_db, args.pg_host)
+	else:	
+		print "Specify all arguments."
