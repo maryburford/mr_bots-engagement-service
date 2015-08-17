@@ -101,7 +101,7 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 		not_done = False
 		for engagement_queue in engagements.values():
 			if len(engagement_queue) == 0:
-				break
+				continue
 			# perform this engagement and remove from queue
 			engagement = engagement_queue.popleft()
 			# try to construct api connection
