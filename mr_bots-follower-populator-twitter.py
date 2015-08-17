@@ -43,6 +43,28 @@ def get_followers(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg
 			c.execute("INSERT INTO followers (follower_id, account_id, provider, updated_at, created_at) VALUES ('{follower_id}', '{account_id}','{provider}', '{created_at}', '{updated_at}')".format(follower_id=follower_id, account_id=account_id, provider='twitter', created_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S')))
 			conn.commit()
 
+# probably the most MR part of this entire thing every thing about this right here
+def calculate_insert_mr_score(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
+
+	query = "with campaign_acquisitions as (select c.account_id, c.id, count(e.prey_id) as acquisition_count from campaigns c " \
+"join engagements e on c.id = e.campaign_id " \
+"join followers f on e.prey_id = f.follower_id " \
+"where c.account_id = f.account_id " \
+"group by c.account_id, c.id) " \
+"select ca.account_id, e.campaign_id, ca.acquisition_count,count(e.prey_id), (ca.acquisition_count::float / count(e.prey_id)) * 100 as mr_score " \
+"from engagements e " \
+"join campaign_acquisitions ca " \
+"on ca.id = e.campaign_id " \
+"group by ca.account_id, e.campaign_id, ca.acquisition_count "
+	conn = psycopg2.connect("dbname='" + pg_db + "' user='" + pg_user + "' password='" + pg_password + "' host='" + pg_host + "'")
+	c = conn.cursor()
+	# fetch all active users with active mr_campaigns
+	c.execute(query)
+	results = c.fetchall()
+	for r in results:
+		account_id, campaign_id, acquisition_count, prey_count, mr_score = r
+		c.execute("UPDATE campaigns SET (updated_at, mr_score) = ('{updated_at}', '{mr_score}') WHERE id = '{campaign_id}'".format(updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), mr_score=mr_score, campaign_id=campaign_id))
+		conn.commit()
 
 
 if __name__  == "__main__":
@@ -58,5 +80,8 @@ if __name__  == "__main__":
 	
 	if args.consumer_key and args.consumer_secret and args.pg_user and args.pg_password and args.pg_db:
 		get_followers(args.consumer_key, args.consumer_secret, args.pg_user, args.pg_password, args.pg_db, args.pg_host)
+		calculate_insert_mr_score(args.consumer_key, args.consumer_secret, args.pg_user, args.pg_password, args.pg_db, args.pg_host)
+
+	
 	else:	
 		print "Specify all arguments."
