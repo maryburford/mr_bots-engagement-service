@@ -13,13 +13,12 @@ import math
 def already_follow(pg_user, pg_password, pg_db, pg_host, account_id, p):
 	conn = psycopg2.connect("dbname='" + pg_db + "' user='" + pg_user + "' password='" + pg_password + "' host='" + pg_host + "'")
 	c = conn.cursor()
-	print ("select * from followers f where f.account_id = {account_id} and f.follower_id = {p}").format(account_id=account_id, p=p)
-	c.mogrify("select * from followers f where f.account_id = %s and f.follower_id = %s",(account_id, p))
-	try:
-		c.fetchall()
-	except Exception as e:
-		return 'Not Following'
-	return 'Following'
+	c.execute("select * from followers f where f.account_id = %s and f.follower_id = %s",(account_id, p))
+	results = c.fetchall()
+	if results:
+		return 'Following'
+	return 'Not Following'
+
 # from the campaign target's results, pick random prey
 def random_prey(prey, n, pg_user, pg_password, pg_db, pg_host, account_id):
 	prey = prey
