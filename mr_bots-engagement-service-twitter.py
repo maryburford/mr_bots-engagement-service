@@ -123,7 +123,7 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 				tweets = api.user_timeline(engagement["prey_id"])
 			except tweepy.error.TweepError as e:
 				print str(e)
-				print "\Error cannot get prey tweets because prey is privot: "+str(engagement["prey_id"])+"\n"
+				print "\Error cannot get prey tweets because prey is private: "+str(engagement["prey_id"])+"\n"
 				# caused by user with protected acct
 				#TODO: this means the user gets one or more less engagements
 				continue
@@ -142,10 +142,10 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 					try:
 						api.create_favorite(tweet_id)
 						engaged_tweets.append(tweet_lookup)
-						c.execute("INSERT INTO engagements (campaign_id, prey_id, created_at, updated_at) VALUES ('{campaign_id}', '{prey_id}', '{created_at}', '{updated_at}')".format(campaign_id=engagement["campaign_id"], prey_id=engagement["prey_id"], created_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S')))
-						conn.commit()
 						# found suitable tweet, stop checking tweets
-						print 'Engagement: Campaign ' + str(engagement['campaign_id']) + ' > Fav Prey > ' + str(engagement['prey_id'])
+						print 'Engagement: Campaign ' + str(engagement['campaign_id']) + ' > Fav Prey > ' + str(engagement['prey_id']) + '> ' + user_name
+						c.execute("INSERT INTO engagements (campaign_id, user_name, prey_id, post_id, created_at, updated_at) VALUES ('{campaign_id}', '{user_name}', '{prey_id}', '{post_id}', '{created_at}', '{updated_at}')".format(campaign_id=engagement["campaign_id"], prey_id=engagement["prey_id"], user_name=user_name, post_id=tweet_id, created_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S')))
+						conn.commit()
 						break
 					except Exception as e:
 						print "Error faving: " + str(e)
