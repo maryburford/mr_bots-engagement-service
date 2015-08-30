@@ -51,7 +51,7 @@ def calculate_insert_mr_score(consumer_key, consumer_secret, pg_user, pg_passwor
 "join followers f on e.prey_id = f.follower_id and f.account_id = c.account_id " \
 "where c.account_id = f.account_id " \
 "group by c.account_id, c.id) " \
-"select ca.account_id, e.campaign_id, ca.acquisition_count,count(e.prey_id), (ca.acquisition_count::float / count(e.prey_id)) * 100 as mr_score " \
+"select ca.account_id, e.campaign_id, ca.acquisition_count as followers_acquired,count(e.prey_id), (ca.acquisition_count::float / count(e.prey_id)) * 100 as mr_score " \
 "from engagements e " \
 "join campaign_acquisitions ca " \
 "on ca.id = e.campaign_id " \
@@ -62,9 +62,10 @@ def calculate_insert_mr_score(consumer_key, consumer_secret, pg_user, pg_passwor
 	c.execute(query)
 	results = c.fetchall()
 	for r in results:
-		account_id, campaign_id, acquisition_count, prey_count, mr_score = r
-		c.execute("UPDATE campaigns SET (updated_at, mr_score) = ('{updated_at}', '{mr_score}') WHERE id = '{campaign_id}'".format(updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), mr_score=mr_score, campaign_id=campaign_id))
+		account_id, campaign_id, followers_acquired, prey_count, mr_score = r
+		c.execute("UPDATE campaigns SET (updated_at, mr_score, followers_acquired) = ('{updated_at}', '{mr_score}','{followers_acquired}') WHERE id = '{campaign_id}'".format(updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), mr_score=mr_score, campaign_id=campaign_id, followers_acquired=followers_acquired))
 		conn.commit()
+
 
 
 if __name__  == "__main__":
