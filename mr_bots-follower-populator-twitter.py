@@ -79,7 +79,7 @@ def update_engagements(consumer_key, consumer_secret, pg_user, pg_password, pg_d
 	results = c.fetchall()
 	for r in results:
 		prey_id, campaign_id = r
-		c.execute("UPDATE engaements e SET (updated_at, isfollowing) = ('{updated_at}', '{isfollowing}') WHERE e.campaign_id = '{campaign_id}' and e.prey_id = '{prey_id}'".format(updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), isfollowing='t', campaign_id=campaign_id, prey_id=prey_id))
+		c.execute("UPDATE engagements e SET (updated_at, isfollowing) = ('{updated_at}', '{isfollowing}') WHERE e.campaign_id = '{campaign_id}' and e.prey_id = '{prey_id}'".format(updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), isfollowing='t', campaign_id=campaign_id, prey_id=prey_id))
 		conn.commit()
 
 
