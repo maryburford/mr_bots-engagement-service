@@ -48,7 +48,7 @@ def calculate_insert_mr_score(consumer_key, consumer_secret, pg_user, pg_passwor
 
 	query = "with campaign_acquisitions as (select c.account_id, c.id, count(distinct(e.prey_id) as acquisition_count from campaigns c " \
 "join engagements e on c.id = e.campaign_id " \
-"join followers f on e.prey_id = f.follower_id " \
+"join followers f on e.prey_id = f.follower_id and f.account_id = c.account_id " \
 "where c.account_id = f.account_id " \
 "group by c.account_id, c.id) " \
 "select ca.account_id, e.campaign_id, ca.acquisition_count,count(e.prey_id), (ca.acquisition_count::float / count(e.prey_id)) * 100 as mr_score " \
