@@ -133,6 +133,7 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 				json_object = t._json
 				user_name = json_object['user']['screen_name']
 				tweet_id = t.id
+				account_id = engagement["account_id"]
 				tweet_lookup = str(engagement["campaign_id"]) + ' ' + str(tweet_id)
 				# check to see if prey has already been engaged
 				if tweet_lookup in engaged_tweets:
@@ -144,7 +145,7 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 						engaged_tweets.append(tweet_lookup)
 						# found suitable tweet, stop checking tweets
 						print 'Engagement: Campaign ' + str(engagement['campaign_id']) + ' > Fav Prey > ' + str(engagement['prey_id']) + '> ' + user_name
-						c.execute("INSERT INTO engagements (campaign_id, user_name, prey_id, post_id, created_at, updated_at) VALUES ('{campaign_id}', '{user_name}', '{prey_id}', '{post_id}', '{created_at}', '{updated_at}')".format(campaign_id=engagement["campaign_id"], prey_id=engagement["prey_id"], user_name=user_name, post_id=tweet_id, created_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S')))
+						c.execute("INSERT INTO engagements (campaign_id, user_name, prey_id, post_id, created_at, updated_at, account_id) VALUES ('{campaign_id}', '{user_name}', '{prey_id}', '{post_id}', '{created_at}', '{updated_at}', '{account_id}')".format(campaign_id=engagement["campaign_id"], prey_id=engagement["prey_id"], account_id=engagement["account_id"], user_name=user_name, post_id=tweet_id, created_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S')))
 						conn.commit()
 						break
 					except Exception as e:
