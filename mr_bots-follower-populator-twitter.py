@@ -75,6 +75,7 @@ def update_engagements(consumer_key, consumer_secret, pg_user, pg_password, pg_d
  "where c.account_id = f.account_id "
  	conn = psycopg2.connect("dbname='" + pg_db + "' user='" + pg_user + "' password='" + pg_password + "' host='" + pg_host + "'")
 	c = conn.cursor()
+	c.execute(query)
 	results = c.fetchall()
 	for r in results:
 		prey_id, campaign_id = r
