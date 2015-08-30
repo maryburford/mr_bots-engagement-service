@@ -46,7 +46,7 @@ def get_followers(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg
 # probably the most MR part of this entire thing every thing about this right here
 def calculate_insert_mr_score(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 
-	query = "with campaign_acquisitions as (select c.account_id, c.id, count(distinct(e.prey_id) as acquisition_count from campaigns c " \
+	query = "with campaign_acquisitions as (select c.account_id, c.id, count(distinct(e.prey_id)) as acquisition_count from campaigns c " \
 "join engagements e on c.id = e.campaign_id " \
 "join followers f on e.prey_id = f.follower_id and f.account_id = c.account_id " \
 "where c.account_id = f.account_id " \
