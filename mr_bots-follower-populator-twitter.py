@@ -66,6 +66,21 @@ def calculate_insert_mr_score(consumer_key, consumer_secret, pg_user, pg_passwor
 		c.execute("UPDATE campaigns SET (updated_at, mr_score, followers_acquired) = ('{updated_at}', '{mr_score}','{followers_acquired}') WHERE id = '{campaign_id}'".format(updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), mr_score=mr_score, campaign_id=campaign_id, followers_acquired=followers_acquired))
 		conn.commit()
 
+def update_engagements(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
+	query = " select distinct(e.prey_id), c.id " \
+ "from campaigns c " \
+ "join engagements e on c.id = e.campaign_id  " \
+ "join followers f on e.prey_id = f.follower_id and f.account_id = c.account_id  " \
+ "join accounts a on c.account_id = a.id " \
+ "where c.account_id = f.account_id "
+ 	conn = psycopg2.connect("dbname='" + pg_db + "' user='" + pg_user + "' password='" + pg_password + "' host='" + pg_host + "'")
+	c = conn.cursor()
+	results = c.fetchall()
+	for r in results:
+		prey_id, campaign_id = r
+		c.execute("UPDATE engaements e SET (updated_at, isfollowing) = ('{updated_at}', '{isfollowing}') WHERE e.campaign_id = '{campaign_id}' and e.prey_id = '{prey_id}'".format(updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), isfollowing='t', campaign_id=campaign_id, prey_id=prey_id))
+		conn.commit()
+
 
 
 if __name__  == "__main__":
@@ -82,6 +97,8 @@ if __name__  == "__main__":
 	if args.consumer_key and args.consumer_secret and args.pg_user and args.pg_password and args.pg_db:
 		get_followers(args.consumer_key, args.consumer_secret, args.pg_user, args.pg_password, args.pg_db, args.pg_host)
 		calculate_insert_mr_score(args.consumer_key, args.consumer_secret, args.pg_user, args.pg_password, args.pg_db, args.pg_host)
+		update_engagements(args.consumer_key, args.consumer_secret, args.pg_user, args.pg_password, args.pg_db, args.pg_host)
+
 
 	
 	else:	
