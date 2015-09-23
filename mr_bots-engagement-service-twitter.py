@@ -66,10 +66,10 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 		try:
 			auth.set_access_token(token, secret)
 			api = tweepy.API(auth)
+		        prey = api.followers_ids(campaign_target)
 		except Exception as e:
 			print "\Error in authing MR_BOTS user: "+str(account_id)+"\n"
 			continue
-		prey = api.followers_ids(campaign_target)
 		r_prey = random_prey(prey, math.floor(engagements_per_day/engagements_per_prey),pg_user, pg_password, pg_db, pg_host, account_id)
 		for p in r_prey:
 			for _ in xrange(engagements_per_prey):
