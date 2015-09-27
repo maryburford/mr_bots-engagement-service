@@ -120,7 +120,7 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 
 			# get tweets
 			try:
-				tweets = api.user_timeline(engagement["prey_id"])
+				tweets = api.user_timeline(engagement["prey_id"],include_rts=False)
 			except tweepy.error.TweepError as e:
 				print str(e)
 				print "\Error cannot get prey tweets because prey is private: "+str(engagement["prey_id"])+"\n"
