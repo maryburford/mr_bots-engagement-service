@@ -35,13 +35,13 @@ def get_followers(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg
 		c.execute('DELETE FROM followers WHERE account_id = %s', [account_id])
 		# get followers, page thru and stuff into array
 		follower_ids = []
-		for page in tweepy.Cursor(api.followers_ids, user_id=user_id).pages():
-			try:
+		try:
+			for page in tweepy.Cursor(api.followers_ids, user_id=user_id).pages():
 			    follower_ids.extend(page)
 			    time.sleep(3)
-			except Exception as e:
-				print "\Error in Paging Back Followers for User: "+str(account_id)+"\n"
-				break
+		except Exception as e:
+			print "\Error in Paging Back Followers for User: "+str(account_id)+"\n"
+			break
 		# iterate through followers and insert into database
 		for follower_id in follower_ids:
 			c.execute("INSERT INTO followers (follower_id, account_id, provider, updated_at, created_at) VALUES ('{follower_id}', '{account_id}','{provider}', '{created_at}', '{updated_at}')".format(follower_id=follower_id, account_id=account_id, provider='twitter', created_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S')))
