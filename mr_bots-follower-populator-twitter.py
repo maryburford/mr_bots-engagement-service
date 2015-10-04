@@ -17,7 +17,7 @@ def get_followers(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg
 	results = c.fetchall()
 			
 	for r in results:
-		token, secret, account_id, user_id, name = r
+		token, secret, account_id, user_id, user_name = r
 		# construct authed api agent AAA and see if user is still using MR_BOTS service and/or MR_BOTS app can still auth
 		try:
 			auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
