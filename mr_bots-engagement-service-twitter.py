@@ -10,6 +10,8 @@ import os
 import argparse
 import math
 
+
+
 def already_follow(pg_user, pg_password, pg_db, pg_host, account_id, p):
 	conn = psycopg2.connect("dbname='" + pg_db + "' user='" + pg_user + "' password='" + pg_password + "' host='" + pg_host + "'")
 	c = conn.cursor()
@@ -69,6 +71,9 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 		        prey = api.followers_ids(campaign_target)
 		except Exception as e:
 			print "\Error in authing MR_BOTS user: "+str(account_id)+"\n"
+			#cancel campaign
+			c.execute("UPDATE campaigns SET active = 'F' WHERE id = '{campaign_id}'".format(campaign_id=campaign_id))
+			conn.commit()
 			continue
 		r_prey = random_prey(prey, math.floor(engagements_per_day/engagements_per_prey),pg_user, pg_password, pg_db, pg_host, account_id)
 		for p in r_prey:
