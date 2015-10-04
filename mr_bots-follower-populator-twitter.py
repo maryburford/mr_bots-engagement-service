@@ -45,7 +45,7 @@ def get_followers(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg
 		for follower_id in follower_ids:
 			c.execute("INSERT INTO followers (follower_id, account_id, provider, updated_at, created_at) VALUES ('{follower_id}', '{account_id}','{provider}', '{created_at}', '{updated_at}')".format(follower_id=follower_id, account_id=account_id, provider='twitter', created_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S'), updated_at=datetime.datetime.fromtimestamp(int(time.time())).strftime('%Y-%m-%d %H:%M:%S')))
 			conn.commit()
-			print "\Updated followers for: "+str(account_id)+' '+user_name"\n"
+			print "\Updated followers for: "+str(account_id)+' '+user_name+"\n"
  
 
 # probably the most MR part of this entire thing every thing about this right here
