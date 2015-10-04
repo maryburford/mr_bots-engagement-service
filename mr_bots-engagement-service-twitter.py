@@ -46,7 +46,7 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 	conn = psycopg2.connect("dbname='" + pg_db + "' user='" + pg_user + "' password='" + pg_password + "' host='" + pg_host + "'")
 	c = conn.cursor()
 	# fetch all active mr_campaigns (will need to change to get all active campaigns)
-	c.execute('select c.id, c.target, c.engagements_per_prey, c.engagements_per_day, a.token, a.secret, a.id from campaigns c left join accounts a on c.account_id = a.id where c.active = True')
+	c.execute("select c.id, c.target, c.engagements_per_prey, c.engagements_per_day, a.token, a.secret, a.id from campaigns c left join accounts a on c.account_id = a.id where c.active = True and a.provider = 'twitter'")
 	print "\nActive Campaigns:\n"
 
 	campaigns = c.fetchall()
