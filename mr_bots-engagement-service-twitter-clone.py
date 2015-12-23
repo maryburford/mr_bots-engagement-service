@@ -21,6 +21,33 @@ mapping = {}
 # Contains the set of words that can start sentences
 starts = []
 
+def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
+    conn = psycopg2.connect("dbname='" + pg_db + "' user='" + pg_user + "' password='" + pg_password + "' host='" + pg_host + "'")
+    c = conn.cursor()
+    c.execute("select c.id, a.token, a.secret, c.target from campaigns c left join accounts a on c.account_id = a.id where c.active = True and c.engagement_type = 'Clone'")
+    campaigns = c.fetchall()
+    for camp in campaigns:
+        campaign_id, token, secret, target = camp
+        print camp
+    try:
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+    except Exception as e:
+        print "\nError in authing MR_BOTS app\n"
+    #break
+    # check user still auths MR_BOTS
+    try:
+        auth.set_access_token(token, secret)
+        api = tweepy.API(auth)
+    except Exception as e:
+        print "\Error in authing MR_BOTS user: "+str(account_id)+"\n"
+    try:
+        tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
+        print tweet
+        api.update_status(status=tweet)
+    except Exception as e:
+        print str(e)
+
+
 # We want to be able to compare words independent of their capitalization.
 def fixCaps(word):
     # Ex: "FOO" -> "foo"
@@ -179,25 +206,22 @@ def generateTweets(consumer_key, consumer_secret, target, access_key, access_sec
         tweet = ' '.join(sent_tokes[0:-1])
     else:
         tweet = tweet
-    print tweet
+    return tweet
 
 if __name__  == "__main__":
-	parser = argparse.ArgumentParser(description="Twitter engagement service.")
-	parser.add_argument("--consumer_key")
-	parser.add_argument("--consumer_secret")
-	parser.add_argument("--target")
-	parser.add_argument("--access_key")
-	parser.add_argument("--access_secret")
-	#parser.add_argument("--pg_user")
-#	parser.add_argument("--pg_password")
-#	parser.add_argument("--pg_db")
-#	parser.add_argument("--pg_host")
+    parser = argparse.ArgumentParser(description="Twitter clone service.")
+    parser.add_argument("--consumer_key")
+    parser.add_argument("--consumer_secret")
+    parser.add_argument("--pg_user")
+    parser.add_argument("--pg_password")
+    parser.add_argument("--pg_db")
+    parser.add_argument("--pg_host")
 
-	args = parser.parse_args()
+    args = parser.parse_args()
 
-	# if args.consumer_key and args.consumer_secret and args.pg_user and args.pg_password and args.pg_db:
-	#	engage(args.consumer_key, args.consumer_secret, args.pg_user, args.pg_password, args.pg_db, args.pg_host)
-	if args.consumer_key and args.consumer_secret:
-		generateTweets(args.consumer_key, args.consumer_secret, args.target, args.access_key, args.access_secret)
-	else:
-		print "Specify all arguments."
+    # if args.consumer_key and args.consumer_secret and args.pg_user and args.pg_password and args.pg_db:
+    #	engage(args.consumer_key, args.consumer_secret, args.pg_user, args.pg_password, args.pg_db, args.pg_host)
+    if args.consumer_key and args.consumer_secret:
+        tweeting_clone(args.consumer_key, args.consumer_secret, args.pg_user, args.pg_password, args.pg_db, args.pg_host)
+    else:
+        print "Specify all arguments."
