@@ -33,8 +33,6 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
             auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         except Exception as e:
             print "\nError in authing MR_BOTS app\n"
-        #break
-        # check user still auths MR_BOTS
         try:
             auth.set_access_token(token, secret)
             api = tweepy.API(auth)
@@ -192,6 +190,8 @@ def build_corpus(consumer_key, consumer_secret, target, access_key, access_secre
 
 
 def generateTweets(consumer_key, consumer_secret, target, access_key, access_secret):
+    tweet_texts = []
+    tempMapping = {}
     markovLength = 2
     build_corpus(consumer_key, consumer_secret, target, access_key, access_secret)
     words = " ".join(str(x) for x in tweet_texts)
