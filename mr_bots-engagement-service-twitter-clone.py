@@ -24,28 +24,28 @@ starts = []
 def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
     conn = psycopg2.connect("dbname='" + pg_db + "' user='" + pg_user + "' password='" + pg_password + "' host='" + pg_host + "'")
     c = conn.cursor()
-    c.execute("select c.id, a.token, a.secret, c.target from campaigns c left join accounts a on c.account_id = a.id where c.active = True and c.engagement_type = 'Clone'")
+    c.execute("select a.id, c.id, a.token, a.secret, c.target from campaigns c left join accounts a on c.account_id = a.id where c.active = True and c.engagement_type = 'Clone'")
     campaigns = c.fetchall()
     for camp in campaigns:
-        campaign_id, token, secret, target = camp
+        account_id, campaign_id, token, secret, target = camp
         print camp
-    try:
-        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    except Exception as e:
-        print "\nError in authing MR_BOTS app\n"
-    #break
-    # check user still auths MR_BOTS
-    try:
-        auth.set_access_token(token, secret)
-        api = tweepy.API(auth)
-    except Exception as e:
-        print "\Error in authing MR_BOTS user: "+str(account_id)+"\n"
-    try:
-        tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
-        print tweet
-        api.update_status(status=tweet)
-    except Exception as e:
-        print str(e)
+        try:
+            auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        except Exception as e:
+            print "\nError in authing MR_BOTS app\n"
+        #break
+        # check user still auths MR_BOTS
+        try:
+            auth.set_access_token(token, secret)
+            api = tweepy.API(auth)
+        except Exception as e:
+            print "\Error in authing MR_BOTS user: "+str(account_id)+"\n"
+        try:
+            tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
+            print tweet
+            api.update_status(status=tweet)
+        except Exception as e:
+            print str(e)
 
 
 # We want to be able to compare words independent of their capitalization.
