@@ -12,7 +12,7 @@ import re
 
 tweet_texts = []
 tempMapping = {}
-
+articles = ['a','an','the','da']
 # (tuple of words) -> {dict: word -> *normalized* number of times the word appears following the tuple}
 # Example entry:
 #    ('eyes', 'turned') => {'to': 0.66666666, 'from': 0.33333333}
@@ -40,7 +40,7 @@ def toHashKey(lst):
 	# Returns the contents of the file, split into a list of words and
 	# (some) punctuation.
 def wordlist(tweet_texts):
-    
+
     wordlist = [fixCaps(w) for w in re.findall(r"[\w']+|[.,!?;]", tweet_texts)]
     return wordlist
 
@@ -91,7 +91,7 @@ def next(prevList):
     index = random.random()
     # Shorten prevList until it's in mapping
     while toHashKey(prevList) not in mapping:
-    	try: 
+    	try:
         	prevList.pop(0)
         except:
         	pass
@@ -107,63 +107,79 @@ def genSentence(markovLength):
     curr = random.choice(starts)
     sent = curr.capitalize()
     prevList = [curr]
-    # Keep adding words until we hit a period
-    while (curr not in "."):
+    # Keep adding words until we hit a period or we're at 140 characters
+    while (curr not in ".") and (sum([len(i) for i in sent]) <= 140):
         curr = next(prevList)
         prevList.append(curr)
         # if the prevList has gotten too long, trim it
         if len(prevList) > markovLength:
             prevList.pop(0)
-        if (curr not in ".,!?;"):
-            sent += " " # Add spaces between words (but not punctuation)
-        sent += curr
+        candidate = sent + curr
+        if (sum([len(i) for i in candidate]) < 140):
+            if (curr not in ".,!?;"):
+                sent += " " # Add spaces between words (but not punctuation)
+            sent += curr
+        else:
+            sent = sent
     return sent
 
 
 def clean_tweets(new_tweets):
-	for i in new_tweets:
-		keys = i.keys()
-		if 'extended_entities' in keys:
-			text = str(i['text'].encode("utf-8")).replace('&amp;','&')
-			tweet_text = text.split('http')[0]
-			tweet_texts.append(tweet_text)
-			oldest = i['id']
-		else:
-			tweet_text = str(i['text'].encode("utf-8")).replace('&amp;','&')
-			tweet_texts.append(tweet_text)
-			oldest = i['id']
-	return oldest
+    for i in new_tweets:
+        keys = i.keys()
+        if 'extended_entities' in keys:
+            text = str(i['text'].encode("utf-8")).replace('&amp;','&')
+            tweet_text = text.split('http')[0]
+            tweet_texts.append(re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '',tweet_text))
+            oldest = i['id']
+        else:
+            tweet_text = str(i['text'].encode("utf-8")).replace('&amp;','&')
+            tweet_texts.append(re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '',tweet_text))
+            oldest = i['id']
+    return oldest
 
 
 
 
 def build_corpus(consumer_key, consumer_secret, target, access_key, access_secret):
-	# this builds a corpus of at least the most recent 100 tweets
-	# we will have a sql query here to get campaign inputs from db, testing now just passing params
-	auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-	auth.set_access_token(access_key, access_secret)
-	api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
-
-	
-	#make initial request for most recent tweets (200 is the maximum allowed count)
-	new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=True,include_rts=False)
-	oldest = clean_tweets(new_tweets)
-
-	while len(tweet_texts) < 101:
-		new_tweets = api.user_timeline(screen_name = target ,count=200,max_id=oldest,exclude_replies=True,include_rts=False)
-		oldest = clean_tweets(new_tweets)
-
- 
+    # this builds a corpus of at least the most recent 100 tweets
+    # we will have a sql query here to get campaign inputs from db, testing now just passing params
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+    auth.set_access_token(access_key, access_secret)
+    api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
+    targets = target.split(',')
+    if len(targets) == 0:
 
 
+    	#make initial request for most recent tweets (200 is the maximum allowed count)
+    	new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=True,include_rts=False)
+    	oldest = clean_tweets(new_tweets)
+
+    	while len(tweet_texts) < 101:
+    		new_tweets = api.user_timeline(screen_name = target ,count=200,max_id=oldest,exclude_replies=True,include_rts=False)
+    		oldest = clean_tweets(new_tweets)
+    else:
+        for target in targets:
+            new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=True,include_rts=False)
+            oldest = clean_tweets(new_tweets)
 
 
 def generateTweets(consumer_key, consumer_secret, target, access_key, access_secret):
-	markovLength = 1
-	build_corpus(consumer_key, consumer_secret, target, access_key, access_secret)
-	words = " ".join(str(x) for x in tweet_texts)
-	buildMapping(wordlist(words), markovLength)
-	print genSentence(markovLength)
+    markovLength = 2
+    build_corpus(consumer_key, consumer_secret, target, access_key, access_secret)
+    words = " ".join(str(x) for x in tweet_texts)
+    buildMapping(wordlist(words), markovLength)
+    tweet = genSentence(markovLength)
+    sent_tokes = tweet.split()
+    last_word = sent_tokes[-1]
+    last_word = last_word.replace('.','').replace(',','')
+    if last_word in articles:
+        tweet = ' '.join(sent_tokes[0:-1])
+    elif len(last_word) == 1:
+        tweet = ' '.join(sent_tokes[0:-1])
+    else:
+        tweet = tweet
+    print tweet
 
 if __name__  == "__main__":
 	parser = argparse.ArgumentParser(description="Twitter engagement service.")
@@ -178,11 +194,10 @@ if __name__  == "__main__":
 #	parser.add_argument("--pg_host")
 
 	args = parser.parse_args()
-	
+
 	# if args.consumer_key and args.consumer_secret and args.pg_user and args.pg_password and args.pg_db:
 	#	engage(args.consumer_key, args.consumer_secret, args.pg_user, args.pg_password, args.pg_db, args.pg_host)
 	if args.consumer_key and args.consumer_secret:
 		generateTweets(args.consumer_key, args.consumer_secret, args.target, args.access_key, args.access_secret)
-	else:	
+	else:
 		print "Specify all arguments."
-  
