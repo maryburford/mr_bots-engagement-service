@@ -40,6 +40,7 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
             print "\Error in authing MR_BOTS user: "+str(account_id)+"\n"
     #    try:
         tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
+        print target
         print tweet
         api.update_status(status=tweet)
    #     except Exception as e:
@@ -194,6 +195,7 @@ def build_corpus(consumer_key, consumer_secret, target, access_key, access_secre
 def generateTweets(consumer_key, consumer_secret, target, access_key, access_secret):
     markovLength = 2
     build_corpus(consumer_key, consumer_secret, target, access_key, access_secret)
+    tweet_texts = build_corpus(consumer_key, consumer_secret, target, access_key, access_secret)
     words = " ".join(str(x) for x in tweet_texts)
     buildMapping(wordlist(words), markovLength)
     tweet = genSentence(markovLength)
