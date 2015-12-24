@@ -42,8 +42,8 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
             tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
             print tweet
             api.update_status(status=tweet)
-        except Exception as e:
-            print str(e)
+   #     except Exception as e:
+    #           print str(e)
 
 
 # We want to be able to compare words independent of their capitalization.
@@ -75,7 +75,7 @@ def wordlist(tweet_texts):
 # Given history = ["the", "rain", "in"] and word = "Spain", we add "Spain" to
 # the entries for ["the", "rain", "in"], ["rain", "in"], and ["in"].
 def addItemToTempMapping(history, word):
-    global tempMapping
+    tempMapping = {}
     while len(history) > 0:
         first = toHashKey(history)
         if first in tempMapping:
@@ -91,7 +91,7 @@ def addItemToTempMapping(history, word):
 # Building and normalizing the mapping.
 def buildMapping(wordlist, markovLength):
     global tempMapping
-    starts.append(wordlist [0])
+    starts.append(wordlist[0])
     for i in range(1, len(wordlist) - 1):
         if i <= markovLength:
             history = wordlist[: i + 1]
@@ -169,6 +169,7 @@ def clean_tweets(new_tweets):
 def build_corpus(consumer_key, consumer_secret, target, access_key, access_secret):
     # this builds a corpus of at least the most recent 100 tweets
     # we will have a sql query here to get campaign inputs from db, testing now just passing params
+    tweet_texts = []
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_key, access_secret)
     api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
@@ -187,11 +188,10 @@ def build_corpus(consumer_key, consumer_secret, target, access_key, access_secre
         for target in targets:
             new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=True,include_rts=False)
             oldest = clean_tweets(new_tweets)
+    return tweet_texts
 
 
-def generateTweets(consumer_key, consumer_secret, target, access_key, access_secret):
-    tweet_texts = []
-    tempMapping = {}
+def generateTweets(consumer_key, consumer_secret, target, access_key, access_secret,tweet_texts):
     markovLength = 2
     build_corpus(consumer_key, consumer_secret, target, access_key, access_secret)
     words = " ".join(str(x) for x in tweet_texts)
