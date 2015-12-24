@@ -38,10 +38,10 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
             api = tweepy.API(auth)
         except Exception as e:
             print "\Error in authing MR_BOTS user: "+str(account_id)+"\n"
-        try:
-            tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
-            print tweet
-            api.update_status(status=tweet)
+    #    try:
+        tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
+        print tweet
+        api.update_status(status=tweet)
    #     except Exception as e:
     #           print str(e)
 
