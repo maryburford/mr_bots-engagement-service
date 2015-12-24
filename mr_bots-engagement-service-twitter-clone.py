@@ -191,7 +191,7 @@ def build_corpus(consumer_key, consumer_secret, target, access_key, access_secre
     return tweet_texts
 
 
-def generateTweets(consumer_key, consumer_secret, target, access_key, access_secret,tweet_texts):
+def generateTweets(consumer_key, consumer_secret, target, access_key, access_secret):
     markovLength = 2
     build_corpus(consumer_key, consumer_secret, target, access_key, access_secret)
     words = " ".join(str(x) for x in tweet_texts)
