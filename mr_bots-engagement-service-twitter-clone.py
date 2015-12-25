@@ -148,7 +148,6 @@ def genSentence (markovLength):
         if len(prevList) > markovLength:
             prevList.pop(0)
         candidate = sent + ' '+ curr
-        print candidate
         if (sum([len(i) for i in candidate]) < 140):
             if (curr not in ".,!?;"):
                 sent += " " # Add spaces between words (but not punctuation)
@@ -187,7 +186,7 @@ def build_corpus(consumer_key, consumer_secret, target, access_key, access_secre
         new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=True,include_rts=False)
         oldest = clean_tweets(new_tweets)
 
-        while len(tweet_texts) < 150:
+        while len(new_tweets) > 1:
             new_tweets = api.user_timeline(screen_name = target ,count=200,max_id=oldest,exclude_replies=True,include_rts=False)
             oldest = clean_tweets(new_tweets)
         return oldest
@@ -201,10 +200,8 @@ def build_corpus(consumer_key, consumer_secret, target, access_key, access_secre
 def generateTweets(consumer_key, consumer_secret, target, access_key, access_secret):
     markovLength = 2
     build_corpus(consumer_key, consumer_secret, target, access_key, access_secret)
-    print tweet_texts
     words = " ".join(str(x) for x in tweet_texts)
     buildMapping(wordlist(words), markovLength)
-    print buildMapping
     tweet = genSentence(markovLength)
     print tweet
     sent_tokes = tweet.split()
