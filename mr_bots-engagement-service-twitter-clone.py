@@ -50,7 +50,7 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
             try:
                 tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
                 print tweet
-                api.update_status(status=tweet)
+          #      api.update_status(status=tweet)
                 tweeted = True
             except Exception as e:
                 print str(e)
@@ -63,7 +63,7 @@ def fixCaps(word):
     if word.isupper() and word != "I":
         word = word.lower()
         # Ex: "LaTeX" => "Latex"
-    elif word [0].isupper():
+    elif word[0].isupper():
         word = word.lower().capitalize()
         # Ex: "wOOt" -> "woot"
     else:
@@ -121,13 +121,13 @@ def buildMapping (wordlist, markovLength):
 
 # Returns the next word in the sentence (chosen randomly),
 # given the previous ones.
-def next (prevList):
+def next(prevList):
     sum = 0.0
     retval = ""
     index = random.random ()
     # Shorten prevList until it's in mapping
     while toHash (prevList) not in mapping:
-        prevList.pop (0)
+        prevList.pop(0)
     # Get a random word from the mapping, given prevList
     for k, v in mapping [toHash (prevList)].iteritems ():
         sum += v
@@ -141,13 +141,16 @@ def genSentence (markovLength):
     sent = curr.capitalize()
     prevList = [curr]
     # Keep adding words until we're at 140 characters
+    print curr
     while (curr not in ".") and (sum([len(i) for i in sent]) <= 140):
         curr = next(prevList)
         prevList.append(curr)
         # if the prevList has gotten too long, trim it
         if len(prevList) > markovLength:
             prevList.pop(0)
+        print prevList
         candidate = sent + ' '+ curr
+        print candidate
         if (sum([len(i) for i in candidate]) < 140):
             if (curr not in ".,!?;"):
                 sent += " " # Add spaces between words (but not punctuation)
@@ -156,17 +159,19 @@ def genSentence (markovLength):
             sent = sent
     return sent
 
+
+
 def clean_tweets(new_tweets):
     for i in new_tweets:
         keys = i.keys()
         if 'extended_entities' in keys:
             text = str(i['text'].encode("utf-8")).replace('&amp;','&')
             tweet_text = text.split('http')[0]
-            tweet_texts.append(re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '',tweet_text))
+            tweet_texts.append(re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*|\@\w+', '',tweet_text))
             oldest = i['id']
         else:
             tweet_text = str(i['text'].encode("utf-8")).replace('&amp;','&')
-            tweet_texts.append(re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '',tweet_text))
+            tweet_texts.append(re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*|\@\w+', '',tweet_text))
             oldest = i['id']
     return oldest
 
@@ -183,18 +188,22 @@ def build_corpus(consumer_key, consumer_secret, target, access_key, access_secre
 
 
         #make initial request for most recent tweets (200 is the maximum allowed count)
-        new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=True,include_rts=False)
+        new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=False,include_rts=False)
         oldest = clean_tweets(new_tweets)
 
         while len(new_tweets) > 1:
-            new_tweets = api.user_timeline(screen_name = target ,count=200,max_id=oldest,exclude_replies=True,include_rts=False)
+            new_tweets = api.user_timeline(screen_name = target ,count=200,max_id=oldest,exclude_replies=False,include_rts=False)
             oldest = clean_tweets(new_tweets)
         return oldest
     else:
         for target in targets:
-            new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=True,include_rts=False)
+            new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=False,include_rts=False)
             oldest = clean_tweets(new_tweets)
-        return oldest
+
+            while len(new_tweets) > 1:
+                new_tweets = api.user_timeline(screen_name = target ,count=200,max_id=oldest,exclude_replies=False,include_rts=False)
+                oldest = clean_tweets(new_tweets)
+            return oldest
 
 
 def generateTweets(consumer_key, consumer_secret, target, access_key, access_secret):
