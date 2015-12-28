@@ -52,6 +52,7 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
                 print tweet
           #      api.update_status(status=tweet)
                 tweeted = True
+                time.sleep(180)
             except Exception as e:
                 print str(e)
                 print 'error, retrying'
