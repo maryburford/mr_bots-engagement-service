@@ -192,6 +192,7 @@ def build_corpus(consumer_key, consumer_secret, target, access_key, access_secre
         new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=False,include_rts=False)
         pages = 1
         oldest = clean_tweets(new_tweets)
+    if len(targets) == 1:
 
         while len(new_tweets) > 1 or pages < 5:
             new_tweets = api.user_timeline(screen_name = target ,count=200,max_id=oldest,exclude_replies=False,include_rts=False)
