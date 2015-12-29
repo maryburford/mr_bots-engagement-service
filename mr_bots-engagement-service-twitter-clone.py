@@ -50,7 +50,7 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
             try:
                 tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
                 print tweet
-          #      api.update_status(status=tweet)
+                api.update_status(status=tweet)
                 tweeted = True
                 time.sleep(180)
             except Exception as e:
@@ -190,20 +190,23 @@ def build_corpus(consumer_key, consumer_secret, target, access_key, access_secre
 
         #make initial request for most recent tweets (200 is the maximum allowed count)
         new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=False,include_rts=False)
+        pages = 1
         oldest = clean_tweets(new_tweets)
 
-        while len(new_tweets) > 1:
+        while len(new_tweets) > 1 or pages < 5:
             new_tweets = api.user_timeline(screen_name = target ,count=200,max_id=oldest,exclude_replies=False,include_rts=False)
             oldest = clean_tweets(new_tweets)
+            pages =+ 1
         return oldest
     else:
         for target in targets:
             new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=False,include_rts=False)
             oldest = clean_tweets(new_tweets)
 
-            while len(new_tweets) > 1:
+            while len(new_tweets) > 1 or pages < 5:
                 new_tweets = api.user_timeline(screen_name = target ,count=200,max_id=oldest,exclude_replies=False,include_rts=False)
                 oldest = clean_tweets(new_tweets)
+                pages =+ 1
             return oldest
 
 
