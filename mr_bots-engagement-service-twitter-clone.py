@@ -47,15 +47,15 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
                 api = tweepy.API(auth)
             except Exception as e:
                 print "\Error in authing MR_BOTS user: "+str(account_id)+"\n"
-            try:
-                tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
-                print tweet
-                api.update_status(status=tweet)
-                tweeted = True
-                time.sleep(180)
-            except Exception as e:
-                print str(e)
-                print 'error, retrying'
+        #    try:
+            tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
+            print tweet
+            api.update_status(status=tweet)
+            tweeted = True
+            time.sleep(180)
+      #      except Exception as e:
+       #         print str(e)
+        #        print 'error, retrying'
 
 
 # We want to be able to compare words independent of their capitalization.
@@ -142,14 +142,13 @@ def genSentence (markovLength):
     sent = curr.capitalize()
     prevList = [curr]
     # Keep adding words until we're at 140 characters
-    print curr
     while (curr not in ".") and (sum([len(i) for i in sent]) <= 140):
         curr = next(prevList)
         prevList.append(curr)
         # if the prevList has gotten too long, trim it
         if len(prevList) > markovLength:
             prevList.pop(0)
-        print prevList
+  #      print prevList
         candidate = sent + ' '+ curr
         print candidate
         if (sum([len(i) for i in candidate]) < 140):
@@ -184,21 +183,25 @@ def build_corpus(consumer_key, consumer_secret, target, access_key, access_secre
     auth.set_access_token(access_key, access_secret)
     api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
     targets = target.split(',')
+    pages = 1
+    rate_limit = api.rate_limit_status()
+   # print rate_limit['resources']['statuses']['/statuses/user_timeline']
     if len(targets) == 1:
-
 
 
         #make initial request for most recent tweets (200 is the maximum allowed count)
         new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=False,include_rts=False)
-        pages = 1
         oldest = clean_tweets(new_tweets)
-    if len(targets) == 1:
+        if len(new_tweets) > 1:
+            while pages < 5:
+            #    print pages
+                new_tweets = api.user_timeline(screen_name = target ,count=200,max_id=oldest,exclude_replies=False,include_rts=False)
+                oldest = clean_tweets(new_tweets)
+                pages = pages + 1
+                rate_limit = api.rate_limit_status()
+                #print rate_limit['resources']['statuses']['/statuses/user_timeline']
 
-        while len(new_tweets) > 1 or pages < 5:
-            new_tweets = api.user_timeline(screen_name = target ,count=200,max_id=oldest,exclude_replies=False,include_rts=False)
-            oldest = clean_tweets(new_tweets)
-            pages =+ 1
-        return oldest
+            return oldest
     else:
         for target in targets:
             new_tweets = api.user_timeline(screen_name = target,count=200,exclude_replies=False,include_rts=False)
@@ -207,7 +210,7 @@ def build_corpus(consumer_key, consumer_secret, target, access_key, access_secre
             while len(new_tweets) > 1 or pages < 5:
                 new_tweets = api.user_timeline(screen_name = target ,count=200,max_id=oldest,exclude_replies=False,include_rts=False)
                 oldest = clean_tweets(new_tweets)
-                pages =+ 1
+                pages = pages + 1
             return oldest
 
 
@@ -217,7 +220,6 @@ def generateTweets(consumer_key, consumer_secret, target, access_key, access_sec
     words = " ".join(str(x) for x in tweet_texts)
     buildMapping(wordlist(words), markovLength)
     tweet = genSentence(markovLength)
-    print tweet
     sent_tokes = tweet.split()
     last_word = sent_tokes[-1]
     last_word = last_word.replace('.','').replace(',','')
