@@ -35,7 +35,6 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
             tempMapping.clear()
             mapping.clear()
             account_id, campaign_id, token, secret, target = camp
-            print camp
             try:
                 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
             except Exception as e:
@@ -49,9 +48,9 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
                 print "\Error in authing MR_BOTS user: "+str(account_id)+"\n"
         #    try:
             tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
-            print tweet
             api.update_status(status=tweet)
             tweeted = True
+            print "\AccountID: "account_id+" Tweeted  "+str(tweet)+"\n"
             time.sleep(180)
       #      except Exception as e:
        #         print str(e)
@@ -150,7 +149,6 @@ def genSentence (markovLength):
             prevList.pop(0)
   #      print prevList
         candidate = sent + ' '+ curr
-        print candidate
         if (sum([len(i) for i in candidate]) < 140):
             if (curr not in ".,!?;"):
                 sent += " " # Add spaces between words (but not punctuation)
