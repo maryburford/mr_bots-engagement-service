@@ -50,7 +50,7 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
             tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
             api.update_status(status=tweet)
             tweeted = True
-            print "\AccountID: "+account_id+" Tweeted  "+str(tweet)+"\n"
+            print "\AccountID: "+str(account_id)+" Tweeted  "+str(tweet)+"\n"
             time.sleep(180)
       #      except Exception as e:
        #         print str(e)
