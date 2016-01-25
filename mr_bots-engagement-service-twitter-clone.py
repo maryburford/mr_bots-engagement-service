@@ -39,23 +39,22 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
                 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
             except Exception as e:
                 print "\nError in authing MR_BOTS app\n"
-            #break
+                break
             # check user still auths MR_BOTS
             try:
                 auth.set_access_token(token, secret)
                 api = tweepy.API(auth)
             except Exception as e:
                 print "\Error in authing MR_BOTS user: "+str(account_id)+"\n"
-        #    try:
-            tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
-            api.update_status(status=tweet)
-            tweeted = True
-            print "\AccountID: "+str(account_id)+" Tweeted  "+str(tweet)+"\n"
-            time.sleep(180)
-      #      except Exception as e:
-       #         print str(e)
-        #        print 'error, retrying'
-
+                break
+            try:
+                tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
+                api.update_status(status=tweet)
+                tweeted = True
+                print "\AccountID: "+str(account_id)+" Tweeted  "+str(tweet)+"\n"
+                time.sleep(180)
+            except Exception as e:
+                pass
 
 # We want to be able to compare words independent of their capitalization.
 def fixCaps(word):
