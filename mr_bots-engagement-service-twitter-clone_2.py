@@ -28,7 +28,6 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
     c = conn.cursor()
     c.execute("select a.id, c.id, a.token, a.secret, c.target from campaigns c left join accounts a on c.account_id = a.id where c.active = True and c.engagement_type = 'Clone'")
     campaigns = c.fetchall()
-    print campaigns
     for camp in campaigns:
         tweeted = False
         while tweeted is False:
