@@ -49,14 +49,14 @@ def tweeting_clone(consumer_key, consumer_secret, pg_user, pg_password, pg_db, p
             except Exception as e:
                 print "\Error in authing MR_BOTS user: "+str(account_id)+"\n"
                 break
-            # try:
-            tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
-            api.update_status(status=tweet)
-            tweeted = True
-            print "\AccountID: "+str(account_id)+" Tweeted  "+str(tweet)+"\n"
-            time.sleep(10)
-            # except Exception as e:
-            #     pass
+            try:
+                tweet = generateTweets(consumer_key, consumer_secret, target, token, secret)
+                api.update_status(status=tweet)
+                tweeted = True
+                print "\AccountID: "+str(account_id)+" Tweeted  "+str(tweet)+"\n"
+                time.sleep(180)
+            except Exception as e:
+                pass
 
 
 def clean_tweets(new_tweets):
