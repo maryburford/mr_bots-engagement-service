@@ -46,7 +46,7 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 	conn = psycopg2.connect("dbname='" + pg_db + "' user='" + pg_user + "' password='" + pg_password + "' host='" + pg_host + "'")
 	c = conn.cursor()
 	# fetch all active mr_campaigns (will need to change to get all active campaigns)
-	c.execute("select c.id, c.target, c.engagements_per_prey, c.engagements_per_day, a.token, a.secret, a.id from campaigns c left join accounts a on c.account_id = a.id where c.active = True and a.provider = 'twitter'")
+	c.execute("select c.id, c.target, c.engagements_per_prey, c.engagements_per_day, a.token, a.secret, a.id from campaigns c left join accounts a on c.account_id = a.id where c.active = True and a.provider = 'twitter' c.engagement_type <> 'Clone'")
 	print "\nActive Campaigns:\n"
 
 	campaigns = c.fetchall()
@@ -90,12 +90,12 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 
 	print "\nEngagements Planned:\n"
 	print engagements
-	
+
 
 	print "\nEngaging...:\n"
-	
 
-	# iterate through the the actions queued for each campaign, 
+
+	# iterate through the the actions queued for each campaign,
 	# until all actions for all campaigns have been completed
 	engaged_tweets = []
 	not_done = True
@@ -143,7 +143,7 @@ def engage(consumer_key, consumer_secret, pg_user, pg_password, pg_db, pg_host):
 				# check to see if prey has already been engaged
 				if tweet_lookup in engaged_tweets:
 					pass
-				# engage if prey needs engagement and log 	
+				# engage if prey needs engagement and log
 				else:
 					try:
 						api.create_favorite(tweet_id)
@@ -171,10 +171,10 @@ if __name__  == "__main__":
 	parser.add_argument("--pg_host")
 
 	args = parser.parse_args()
-	
+
 	if args.consumer_key and args.consumer_secret and args.pg_user and args.pg_password and args.pg_db:
 		engage(args.consumer_key, args.consumer_secret, args.pg_user, args.pg_password, args.pg_db, args.pg_host)
-	else:	
+	else:
 		print "Specify all arguments."
-  
+
 
