@@ -1,3 +1,9 @@
+"""
+This is a refactor that Patrick once attempted at the Whole Foods in Gowanus.
+This code is D.R.Y. (Don't Repeat Yourself). 
+But the other code in this repo is W.E.T. (Works Every Time).
+"""
+
 import ConfigParser
 
 class EngagementQueue(object):
