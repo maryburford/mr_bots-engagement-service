@@ -234,7 +234,7 @@ def generateTweets(consumer_key, consumer_secret, target, access_key, access_sec
             already_tweeted = True
 
     if already_tweeted:
-        generateTweets()
+        generateTweets(consumer_key, consumer_secret, target, access_key, access_secret)
     else:
         return tweet
 
