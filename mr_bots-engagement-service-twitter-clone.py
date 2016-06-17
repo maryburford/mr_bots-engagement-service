@@ -226,7 +226,17 @@ def generateTweets(consumer_key, consumer_secret, target, access_key, access_sec
         tweet = ' '.join(sent_tokes[0:-1]).replace(',','.')
     else:
         tweet = tweet
-    return tweet
+        
+        
+    already_tweeted = False
+    for t in tweet_texts:
+        if t.strip() == tweet.strip():
+            already_tweeted = True
+
+    if already_tweeted:
+        generateTweets()
+    else:
+        return tweet
 
 
 if __name__  == "__main__":
