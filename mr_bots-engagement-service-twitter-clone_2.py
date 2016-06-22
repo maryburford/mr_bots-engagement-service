@@ -108,6 +108,16 @@ def build_corpus(consumer_key, consumer_secret, target, access_key, access_secre
             return oldest
 
 
+def check_tweet(tweet,tweet_texts):
+    tweet_texts = frozenset([tweet_texts])
+    existing_tweet = False
+    clean_tweet = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*|\@\w+', '',tweet)
+    if clean_tweet in tweet_texts:
+        already_tweeted = True
+    else:
+        already_tweeted = False
+    return already_tweeted
+
 def generateTweets(consumer_key, consumer_secret, target, access_key, access_secret):
     order = 2
     build_corpus(consumer_key, consumer_secret, target, access_key, access_secret)
@@ -137,9 +147,12 @@ def generateTweets(consumer_key, consumer_secret, target, access_key, access_sec
                 tweet = tweet
         elif rando == 1:
             tweet = tweet.upper()
-    print tweet
-    return tweet
 
+    # checks to see if tweet is not in original corpus
+    if check_tweet(tweet) is True:
+        generateTweets(consumer_key, consumer_secret, target, access_key, access_secret)
+    else:
+        return tweet
 
 
 if __name__  == "__main__":
