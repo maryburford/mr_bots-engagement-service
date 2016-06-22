@@ -109,8 +109,7 @@ def build_corpus(consumer_key, consumer_secret, target, access_key, access_secre
 
 
 def check_tweet(tweet,tweet_texts):
-    tweet_texts = frozenset([tweet_texts])
-    existing_tweet = False
+    tweet_texts = frozenset(tweet_texts)
     clean_tweet = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*|\@\w+', '',tweet)
     if clean_tweet in tweet_texts:
         already_tweeted = True
@@ -149,12 +148,11 @@ def generateTweets(consumer_key, consumer_secret, target, access_key, access_sec
             tweet = tweet.upper()
 
     # checks to see if tweet is not in original corpus
-    if check_tweet(tweet) is True:
+    already_tweeted = check_tweet(tweet,tweet_texts)
+    if already_tweeted is True:
         generateTweets(consumer_key, consumer_secret, target, access_key, access_secret)
     else:
         return tweet
-
-
 if __name__  == "__main__":
     parser = argparse.ArgumentParser(description="Twitter clone service.")
     parser.add_argument("--consumer_key")
