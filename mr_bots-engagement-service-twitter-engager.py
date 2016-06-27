@@ -38,6 +38,68 @@ class Engager(object):
         return True
 
 
+    def get_timeline(self, filter_engaged = True, filter_self = True):
+        # TODO: this needs paging implemented
+        timeline = self.api.home_timeline(count = 200)
+
+        def not_engaged(tweet):
+            return tweet['favorited'] == False and tweet['retweeted'] == False
+
+        def not_self(tweet):
+            return tweet['user']['id_str'] != self.account['id_str']
+
+        if filter_engaged:
+            timeline = filter(not_engaged, timeline)
+        if filter_self:
+            timeline = filter(not_self, timeline)
+
+        return timeline
+
+    def fav_tweet(self):
+        timeline = self.get_timeline()
+
+        if len(timeline) == 0:
+            return False
+
+        rand_tweet = random.sample(timeline, 1)[0]
+        self.api.create_favorite(rand_tweet['id_str'])
+
+        # print 'faved tweet ' +  rand_tweet['text'] + ' from ' + rand_tweet['user']['screen_name']
+        return True
+
+    def rt_tweet(self):
+        timeline = self.get_timeline()
+
+        if len(timeline) == 0:
+            return False
+
+        rand_tweet = random.sample(timeline, 1)[0]
+        self.api.retweet(rand_tweet['id_str'])
+
+        # print 'retweeted tweet ' +  rand_tweet['text'] + ' from ' + rand_tweet['user']['screen_name']
+        return True
+
+    def reply_to_random_tweet(self):
+        timeline = self.get_timeline(filter_engaged = False)
+
+        if len(timeline) == 0:
+            return False
+
+        rand_tweet = random.sample(timeline, 1)[0]
+        rand_user_id = rand_tweet['user']['id_str']
+        rand_user_name = rand_tweet['user']['screen_name']
+        tweets = get_tweets(self.api, self.account['id_str'])
+        tweeters_tweets = get_tweets(self.api, rand_user_id, len(tweets))
+        all_tweets = tweets + tweeters_tweets
+
+        response = generateTweets(all_tweets)
+        response = '@' + rand_user_name + ' ' +  response
+        self.api.update_status(status = response, in_reply_to_status_id = rand_user_id)
+
+        # print 'replied to tweet ' +  rand_tweet['text'] + ' from ' + rand_tweet['user']['screen_name'] + ' with ' + response
+        return True
+
+
     def reply_to_mention(self):
         mentions = self.api.mentions_timeline(count = 200, since_id = 1)
         if len(mentions) == 0:
@@ -68,7 +130,13 @@ class Engager(object):
 
 
     def engage(self):
-        possible_actions = ['follow_user', 'reply_to_mention']
+        possible_actions = [
+                'follow_user',
+                'reply_to_mention',
+                'fav_tweet',
+                'rt_tweet',
+                'reply_to_random_tweet'
+                ]
         rand_action = random.sample(possible_actions, 1)[0]
 
         action = getattr(self, rand_action)
