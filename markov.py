@@ -46,6 +46,9 @@ class MarkovChainer(object):
 
     #Generate the goofy sentences that become your tweet.
     def generate_sentence(self):
+        # TODO: this fucks up if there is no beginnings because
+        # account is new, not enough tweets, need a fall back
+        # corpus when this happens
         res = random.choice(self.beginnings)
         res = res[:]
         if len(res)==self.order:
